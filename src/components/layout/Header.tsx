@@ -28,7 +28,7 @@ export function Header() {
               alt="VekterTeori"
               width={300}
               height={75}
-              className="h-14 w-auto"
+              className="h-28 w-auto"
               priority
             />
           </Link>
