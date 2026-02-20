@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -23,13 +22,11 @@ export function Header() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center">
-            <Image
-              src="/logo.png"
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`}
               alt="VekterTeori"
-              width={300}
-              height={75}
               className="h-28 w-auto"
-              priority
             />
           </Link>
 
