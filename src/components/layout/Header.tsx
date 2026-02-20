@@ -21,14 +21,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-brand-800 text-white shadow-lg">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="flex h-40 items-center justify-between">
+        <div className="flex h-32 items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
               alt="VekterTeori"
               width={400}
               height={100}
-              className="h-36 w-auto"
+              className="h-28 w-auto"
               priority
             />
           </Link>
