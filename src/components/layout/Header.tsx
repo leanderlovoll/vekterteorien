@@ -21,14 +21,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-brand-800 text-white shadow-lg">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="flex h-20 items-center justify-between">
-          <Link href="/" className="flex items-center shrink-0">
+        <div className="flex h-40 items-center justify-between">
+          <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
               alt="VekterTeori"
               width={400}
               height={100}
-              className="h-12 w-auto"
+              className="h-36 w-auto"
               priority
             />
           </Link>
@@ -50,7 +50,7 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href="/handlekurv"
               className="p-2 rounded-lg text-brand-200 hover:bg-brand-700 hover:text-white transition-colors"
@@ -62,7 +62,7 @@ export function Header() {
             </Link>
             <Link
               href="/logg-inn"
-              className="hidden sm:inline-flex items-center px-5 py-2 bg-white text-brand-800 text-sm font-semibold rounded-lg hover:bg-brand-50 transition-colors"
+              className="hidden sm:inline-flex items-center px-4 py-1.5 bg-white text-brand-800 text-sm font-semibold rounded-lg hover:bg-brand-50 transition-colors"
             >
               Logg inn
             </Link>
