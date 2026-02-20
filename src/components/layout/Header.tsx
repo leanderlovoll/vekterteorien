@@ -26,9 +26,9 @@ export function Header() {
             <Image
               src="/logo.png"
               alt="VekterTeori"
-              width={200}
-              height={50}
-              className="h-12 w-auto"
+              width={300}
+              height={75}
+              className="h-14 w-auto"
               priority
             />
           </Link>
