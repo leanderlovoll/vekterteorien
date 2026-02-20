@@ -6,6 +6,9 @@ import { Footer } from '@/components/layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Force all pages to render dynamically (SSR) to avoid Node.js 24 prerender issues
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: {
     default: 'VekterTeori | Øv til vektereksamen',

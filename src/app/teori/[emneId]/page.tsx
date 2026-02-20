@@ -1,11 +1,7 @@
 import Link from 'next/link';
-import { subjects, getSubjectById } from '@/data/subjects';
+import { getSubjectById } from '@/data/subjects';
 import { allTheory } from '@/data/theory';
 import { notFound } from 'next/navigation';
-
-export function generateStaticParams() {
-  return subjects.map((s) => ({ emneId: s.id }));
-}
 
 export default async function TheoryDetailPage({ params }: { params: Promise<{ emneId: string }> }) {
   const { emneId } = await params;
