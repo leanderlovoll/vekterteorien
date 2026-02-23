@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 export default function AuthCallback() {
   useEffect(() => {
     supabase.auth.getSession().finally(() => {
-      window.location.href = '/';
+      window.location.href = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/';
     });
   }, []);
 
