@@ -63,7 +63,7 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <Link
-              href="/handlekurv"
+              href="/betaling"
               className="p-2 rounded-lg text-brand-200 hover:bg-brand-700 hover:text-white transition-colors"
               aria-label="Handlekurv"
             >
