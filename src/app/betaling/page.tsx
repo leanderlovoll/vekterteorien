@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -36,12 +38,82 @@ const plans = [
 ];
 
 export default function BetalingPage() {
-  const { isActive, activate, daysRemaining, subscription, isLoaded } = useSubscription();
+  const { isActive, daysRemaining, subscription, isLoaded } = useSubscription();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSuccess(params.get('success') === 'true');
+    }
+  }, []);
+
+  const handlePurchase = async (planId: 'weekly' | 'monthly') => {
+    setLoading(planId);
+    setError('');
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setError('Du må logge inn først for å kjøpe.');
+      setLoading(null);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ plan: planId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Noe gikk galt. Prøv igjen.');
+        setLoading(null);
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      setError('Kunne ikke koble til betalingstjenesten. Prøv igjen senere.');
+      setLoading(null);
+    }
+  };
 
   if (!isLoaded) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 text-center">
         <p className="text-surface-700">Laster...</p>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <div className="bg-white rounded-xl shadow-sm border border-surface-200 p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-surface-900 mb-2">Betaling fullført!</h1>
+          <p className="text-surface-700 mb-6">
+            Takk for kjøpet! Du har nå full tilgang til alt innhold.
+          </p>
+          <Link
+            href="/ovelse"
+            className="inline-flex items-center justify-center px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors"
+          >
+            Start øving
+          </Link>
+        </div>
       </div>
     );
   }
@@ -94,6 +166,17 @@ export default function BetalingPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-lg text-center">
+          <p className="text-sm text-error-700">{error}</p>
+          {error.includes('logge inn') && (
+            <Link href="/logg-inn" className="text-sm text-brand-600 hover:text-brand-700 font-medium mt-1 inline-block">
+              Gå til innlogging
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Plans */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         {plans.map((plan) => (
@@ -126,22 +209,23 @@ export default function BetalingPage() {
               ))}
             </ul>
             <button
-              onClick={() => activate(plan.id)}
+              onClick={() => handlePurchase(plan.id)}
+              disabled={loading !== null}
               className={cn(
-                'w-full py-3 font-medium rounded-lg transition-colors',
+                'w-full py-3 font-medium rounded-lg transition-colors disabled:opacity-50',
                 plan.popular
                   ? 'bg-brand-600 text-white hover:bg-brand-700'
                   : 'bg-surface-100 text-surface-900 hover:bg-surface-200 border border-surface-300'
               )}
             >
-              Velg {plan.name.toLowerCase()}
+              {loading === plan.id ? 'Sender til betaling...' : `Velg ${plan.name.toLowerCase()}`}
             </button>
           </div>
         ))}
       </div>
 
       <p className="text-xs text-center text-surface-500">
-        Betalingen aktiverer tilgang umiddelbart. Abonnementet fornyes ikke automatisk.
+        Du blir sendt til en sikker betalingsside hos Stripe. Abonnementet fornyes ikke automatisk.
       </p>
     </div>
   );

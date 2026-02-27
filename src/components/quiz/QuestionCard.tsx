@@ -1,7 +1,26 @@
 'use client';
 
-import { Question } from '@/types';
+import { useMemo } from 'react';
+import { Question, AnswerOption } from '@/types';
 import { cn } from '@/lib/utils';
+
+function seededShuffle<T>(array: T[], seed: string): T[] {
+  const shuffled = [...array];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    hash = ((hash << 5) - hash) + i;
+    hash |= 0;
+    const j = Math.abs(hash) % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+const optionLabels = ['A', 'B', 'C', 'D'];
 
 interface QuestionCardProps {
   question: Question;
@@ -26,6 +45,11 @@ export function QuestionCard({
   onNext,
   onPrevious,
 }: QuestionCardProps) {
+  const shuffledOptions = useMemo<AnswerOption[]>(
+    () => seededShuffle(question.options, question.id),
+    [question.id, question.options]
+  );
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
       {/* Progress header */}
@@ -59,7 +83,7 @@ export function QuestionCard({
 
         {/* Options */}
         <div className="space-y-3">
-          {question.options.map((option) => {
+          {shuffledOptions.map((option, index) => {
             const isSelected = selectedOptionId === option.id;
             const isCorrect = option.id === question.correctOptionId;
             const showCorrectness = showResult && mode === 'practice';
@@ -99,7 +123,7 @@ export function QuestionCard({
                   showCorrectness && isSelected && !isCorrect &&
                     'border-error-500 bg-error-500 text-white',
                 )}>
-                  {option.id.toUpperCase()}
+                  {optionLabels[index]}
                 </span>
                 <span className={cn(
                   'pt-1',
