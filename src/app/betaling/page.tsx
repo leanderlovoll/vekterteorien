@@ -38,7 +38,7 @@ const plans = [
 ];
 
 export default function BetalingPage() {
-  const { isActive, daysRemaining, subscription, isLoaded, cancel } = useSubscription();
+  const { isActive, daysRemaining, subscription, isLoaded, cancel, activate } = useSubscription();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -46,7 +46,12 @@ export default function BetalingPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      setSuccess(params.get('success') === 'true');
+      const isSuccess = params.get('success') === 'true';
+      const plan = params.get('plan') as 'weekly' | 'monthly' | null;
+      if (isSuccess && plan) {
+        activate(plan);
+        setSuccess(true);
+      }
     }
   }, []);
 

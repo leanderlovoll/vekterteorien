@@ -31,12 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const origin = req.headers.origin || process.env.NEXT_PUBLIC_APP_URL || '';
 
   const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
+    mode: 'payment',
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: data.user.email ?? undefined,
-    success_url: `${origin}/betaling?success=true`,
+    success_url: `${origin}/betaling?success=true&plan=${plan}`,
     cancel_url: `${origin}/betaling`,
-    metadata: { userId: data.user.id },
+    metadata: { userId: data.user.id, plan },
   });
 
   return res.status(200).json({ url: session.url });
