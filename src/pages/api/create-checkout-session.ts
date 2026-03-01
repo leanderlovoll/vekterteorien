@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     mode: 'payment',
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: data.user.email ?? undefined,
-    success_url: `${origin}/betaling?success=true&plan=${plan}`,
+    success_url: `${origin}/betaling?success=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/betaling`,
     metadata: { userId: data.user.id, plan },
   });

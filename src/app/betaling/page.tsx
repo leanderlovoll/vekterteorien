@@ -44,14 +44,36 @@ export default function BetalingPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const isSuccess = params.get('success') === 'true';
-      const plan = params.get('plan') as 'weekly' | 'monthly' | null;
-      if (isSuccess && plan) {
-        activate(plan).then(() => setSuccess(true));
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const isSuccess = params.get('success') === 'true';
+    const sessionId = params.get('session_id');
+    if (!isSuccess || !sessionId) return;
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      try {
+        const res = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          await activate(data.plan);
+          setSuccess(true);
+        } else {
+          setError(data.error || 'Kunne ikke verifisere betaling.');
+        }
+      } catch {
+        setError('Kunne ikke verifisere betaling. Prøv igjen senere.');
       }
-    }
+    })();
   }, [activate]);
 
   const handlePurchase = async (planId: 'weekly' | 'monthly') => {

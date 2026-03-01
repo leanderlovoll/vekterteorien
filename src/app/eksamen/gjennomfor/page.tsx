@@ -9,13 +9,32 @@ import { ExamTimer } from '@/components/quiz/ExamTimer';
 import { ExamResult } from '@/components/quiz/ExamResult';
 import { useTimer } from '@/hooks/useTimer';
 import { useProgress } from '@/hooks/useProgress';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { Question } from '@/types';
+import Link from 'next/link';
 
 const EXAM_DURATION = 4 * 60 * 60; // 4 hours in seconds
 
 export default function ExamPage() {
   const { addExamResult, addWrongAnswer } = useProgress();
+  const { isActive, isLoaded } = useSubscription();
+
+  if (!isLoaded) {
+    return <div className="mx-auto max-w-4xl px-4 py-12 text-center"><p className="text-surface-700">Laster...</p></div>;
+  }
+
+  if (!isActive) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <h1 className="text-2xl font-bold text-surface-900 mb-4">Krever abonnement</h1>
+        <p className="text-surface-700 mb-6">Du trenger et aktivt abonnement for å ta eksamen.</p>
+        <Link href="/betaling" className="inline-flex items-center justify-center px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors">
+          Se abonnementer
+        </Link>
+      </div>
+    );
+  }
   const [isStarted, setIsStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selections, setSelections] = useState<Record<number, string>>({});
