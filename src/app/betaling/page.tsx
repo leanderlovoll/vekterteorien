@@ -49,11 +49,10 @@ export default function BetalingPage() {
       const isSuccess = params.get('success') === 'true';
       const plan = params.get('plan') as 'weekly' | 'monthly' | null;
       if (isSuccess && plan) {
-        activate(plan);
-        setSuccess(true);
+        activate(plan).then(() => setSuccess(true));
       }
     }
-  }, []);
+  }, [activate]);
 
   const handlePurchase = async (planId: 'weekly' | 'monthly') => {
     setLoading(planId);
@@ -148,9 +147,9 @@ export default function BetalingPage() {
           <div className="mt-6 pt-6 border-t border-surface-200">
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm('Er du sikker på at du vil avslutte abonnementet? Du mister tilgangen umiddelbart.')) {
-                  cancel();
+                  await cancel();
                 }
               }}
               className="text-sm text-surface-500 hover:text-error-600 transition-colors"
