@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { subjects } from '@/data/subjects';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://vekterteorien.no';
+  const baseUrl = 'https://www.vekterteorien.no';
 
   const staticPages = [
     '',

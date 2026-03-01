@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/auth/'],
     },
-    sitemap: 'https://vekterteorien.no/sitemap.xml',
+    sitemap: 'https://www.vekterteorien.no/sitemap.xml',
   };
 }
