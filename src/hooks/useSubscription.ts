@@ -16,7 +16,7 @@ const FREE_QUESTIONS_PER_SUBJECT = 3;
 
 export function useSubscription() {
   const [subscription, setSubscription, isLoaded] = useLocalStorage<SubscriptionData>(
-    'besta-vekterpreven-subscription',
+    'besta-vekterpreven-sub-v2',
     defaultSubscription
   );
 
