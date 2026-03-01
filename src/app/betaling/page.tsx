@@ -38,7 +38,7 @@ const plans = [
 ];
 
 export default function BetalingPage() {
-  const { isActive, daysRemaining, subscription, isLoaded } = useSubscription();
+  const { isActive, daysRemaining, subscription, isLoaded, cancel } = useSubscription();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -140,6 +140,19 @@ export default function BetalingPage() {
           >
             Gå til øving
           </Link>
+          <div className="mt-6 pt-6 border-t border-surface-200">
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Er du sikker på at du vil avslutte abonnementet? Du mister tilgangen umiddelbart.')) {
+                  cancel();
+                }
+              }}
+              className="text-sm text-surface-500 hover:text-error-600 transition-colors"
+            >
+              Avslutt abonnement
+            </button>
+          </div>
         </div>
       </div>
     );

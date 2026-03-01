@@ -16,7 +16,7 @@ const FREE_QUESTIONS_PER_SUBJECT = 3;
 
 export function useSubscription() {
   const [subscription, setSubscription, isLoaded] = useLocalStorage<SubscriptionData>(
-    'besta-vekterpreven-sub-v2',
+    'besta-vekterpreven-subscription',
     defaultSubscription
   );
 
@@ -43,11 +43,16 @@ export function useSubscription() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   })();
 
+  const cancel = () => {
+    setSubscription(defaultSubscription);
+  };
+
   return {
     subscription,
     isLoaded,
     isActive,
     activate,
+    cancel,
     daysRemaining,
     freeLimit: FREE_QUESTIONS_PER_SUBJECT,
   };
