@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/feilbank', label: 'Feilbank' },
   { href: '/teori', label: 'Teori' },
   { href: '/statistikk', label: 'Statistikk' },
+  { href: '/betaling', label: 'Betalinger' },
 ];
 
 export function Header() {
