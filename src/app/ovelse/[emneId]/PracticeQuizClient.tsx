@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getQuestionsBySubject } from '@/data/questions';
@@ -26,10 +26,16 @@ export default function PracticeQuizClient() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [quizKey, setQuizKey] = useState(0);
 
-  const allQuestions: Question[] = useMemo(
-    () => shuffleArray(getQuestionsBySubject(emneId)),
-    [emneId, quizKey]
+  const subjectQuestions = useMemo(
+    () => getQuestionsBySubject(emneId),
+    [emneId]
   );
+
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    setAllQuestions(shuffleArray(subjectQuestions));
+  }, [subjectQuestions, quizKey]);
 
   // Free users only get freeLimit questions per subject
   const questions = useMemo(
@@ -119,7 +125,7 @@ export default function PracticeQuizClient() {
           correct={correctCount}
           total={questions.length}
           subjectName={subject.name}
-          onRetry={handleRetry}
+          onRetry={isLimited ? undefined : handleRetry}
         />
         {isLimited && (
           <div className="mt-6 bg-brand-50 border border-brand-200 rounded-xl p-6 text-center">
