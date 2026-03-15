@@ -4,7 +4,15 @@ import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-const supabase = createClient(
+// Use service role key for server-side writes (bypasses RLS)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
+
+// Anon client only for verifying the user's auth token
+const supabaseAnon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
@@ -12,27 +20,23 @@ const supabase = createClient(
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // Verify user is authenticated
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'Ikke innlogget' });
 
-  const { data: authData, error: authError } = await supabase.auth.getUser(token);
+  const { data: authData, error: authError } = await supabaseAnon.auth.getUser(token);
   if (authError || !authData?.user) return res.status(401).json({ error: 'Ugyldig token' });
 
   const { session_id } = req.body;
   if (!session_id) return res.status(400).json({ error: 'Mangler session_id' });
 
   try {
-    // Verify the checkout session with Stripe
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
-    // Check that payment was successful
     if (session.payment_status !== 'paid') {
       return res.status(400).json({ error: 'Betaling ikke fullført' });
     }
 
-    // Check that this session belongs to this user
     if (session.metadata?.userId !== authData.user.id) {
       return res.status(403).json({ error: 'Ugyldig sesjon' });
     }
@@ -42,7 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Ugyldig plan' });
     }
 
-    // Calculate expiry
     const now = new Date();
     const expiresAt = new Date(now);
     if (plan === 'weekly') {
@@ -51,17 +54,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       expiresAt.setMonth(expiresAt.getMonth() + 1);
     }
 
-    // Activate subscription in Supabase (server-side with verified payment)
-    const { error: upsertError } = await supabase.auth.admin
-      ? await supabase.from('subscriptions').upsert({
-          user_id: authData.user.id,
-          plan,
-          expires_at: expiresAt.toISOString(),
-        }, { onConflict: 'user_id' })
-      : { error: null };
+    // Server-side upsert with service role key — reliable, bypasses RLS
+    const { error: upsertError } = await supabaseAdmin
+      .from('subscriptions')
+      .upsert({
+        user_id: authData.user.id,
+        plan,
+        expires_at: expiresAt.toISOString(),
+      }, { onConflict: 'user_id' });
 
-    // Even without admin access, the client can do the upsert via RLS
-    // The important thing is we verified the payment first
+    if (upsertError) {
+      return res.status(500).json({ error: 'Kunne ikke aktivere abonnement' });
+    }
 
     return res.status(200).json({
       verified: true,
