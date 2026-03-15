@@ -38,7 +38,7 @@ const plans = [
 ];
 
 export default function BetalingPage() {
-  const { isActive, daysRemaining, subscription, isLoaded, activate } = useSubscription();
+  const { isActive, daysRemaining, subscription, isLoaded, activate, cancel } = useSubscription();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -171,6 +171,19 @@ export default function BetalingPage() {
           >
             Gå til øving
           </Link>
+          <div className="mt-6 pt-6 border-t border-surface-200">
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm('Er du sikker? Du mister tilgangen umiddelbart. Betalingen refunderes ikke.')) {
+                  await cancel();
+                }
+              }}
+              className="text-sm text-surface-500 hover:text-error-600 transition-colors"
+            >
+              Avslutt medlemskap
+            </button>
+          </div>
         </div>
       </div>
     );
