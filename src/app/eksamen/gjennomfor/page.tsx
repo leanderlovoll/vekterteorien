@@ -20,21 +20,6 @@ export default function ExamPage() {
   const { addExamResult, addWrongAnswer } = useProgress();
   const { isActive, isLoaded } = useSubscription();
 
-  if (!isLoaded) {
-    return <div className="mx-auto max-w-4xl px-4 py-12 text-center"><p className="text-surface-700">Laster...</p></div>;
-  }
-
-  if (!isActive) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-surface-900 mb-4">Krever abonnement</h1>
-        <p className="text-surface-700 mb-6">Du trenger et aktivt abonnement for å ta eksamen.</p>
-        <Link href="/betaling" className="inline-flex items-center justify-center px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors">
-          Se abonnementer
-        </Link>
-      </div>
-    );
-  }
   const [isStarted, setIsStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selections, setSelections] = useState<Record<number, string>>({});
@@ -45,12 +30,6 @@ export default function ExamPage() {
     () => selectExamQuestions(allQuestions, subjects, 80),
     []
   );
-
-  const handleTimeUp = useCallback(() => {
-    submitExam();
-  }, []);
-
-  const { timeRemaining, start } = useTimer(EXAM_DURATION, handleTimeUp);
 
   const submitExam = useCallback(() => {
     const timeUsed = Math.round((Date.now() - startTime) / 1000);
@@ -72,7 +51,6 @@ export default function ExamPage() {
 
     addExamResult(correct, questions.length, timeUsed, breakdown);
 
-    // Track wrong answers in feilbank
     for (let i = 0; i < questions.length; i++) {
       if (selections[i] !== questions[i].correctOptionId) {
         addWrongAnswer(questions[i].id);
@@ -82,12 +60,17 @@ export default function ExamPage() {
     setIsCompleted(true);
   }, [questions, selections, startTime, addExamResult, addWrongAnswer]);
 
+  const handleTimeUp = useCallback(() => {
+    submitExam();
+  }, [submitExam]);
+
+  const { timeRemaining, start } = useTimer(EXAM_DURATION, handleTimeUp);
+
   const handleStartExam = useCallback(() => {
     setIsStarted(true);
     start();
   }, [start]);
 
-  // Warn before leaving
   useEffect(() => {
     if (isStarted && !isCompleted) {
       const handler = (e: BeforeUnloadEvent) => {
@@ -97,6 +80,22 @@ export default function ExamPage() {
       return () => window.removeEventListener('beforeunload', handler);
     }
   }, [isStarted, isCompleted]);
+
+  if (!isLoaded) {
+    return <div className="mx-auto max-w-4xl px-4 py-12 text-center"><p className="text-surface-700">Laster...</p></div>;
+  }
+
+  if (!isActive) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <h1 className="text-2xl font-bold text-surface-900 mb-4">Krever abonnement</h1>
+        <p className="text-surface-700 mb-6">Du trenger et aktivt abonnement for å ta eksamen.</p>
+        <Link href="/betaling" className="inline-flex items-center justify-center px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors">
+          Se abonnementer
+        </Link>
+      </div>
+    );
+  }
 
   if (!isStarted) {
     return (
