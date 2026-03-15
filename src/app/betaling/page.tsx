@@ -153,16 +153,32 @@ export default function BetalingPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-surface-900 mb-2">Du har aktivt abonnement</h1>
+          <h1 className="text-2xl font-bold text-surface-900 mb-2">
+            {subscription.cancelled ? 'Medlemskap avsluttes' : 'Du har aktivt abonnement'}
+          </h1>
           <p className="text-surface-700 mb-1">
             Plan: <span className="font-medium">{subscription.plan === 'weekly' ? 'Ukepass' : 'Månedspass'}</span>
           </p>
           <p className="text-surface-700 mb-6">
-            {daysRemaining} {daysRemaining === 1 ? 'dag' : 'dager'} gjenstår
-            {subscription.expiresAt && (
-              <span className="block text-sm text-surface-500 mt-1">
-                Tilgangen løper ut {new Date(subscription.expiresAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {subscription.cancelled ? (
+              <span>
+                Du har tilgang til{' '}
+                <span className="font-medium">
+                  {new Date(subscription.expiresAt!).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+                <span className="block text-sm text-surface-500 mt-1">
+                  Etter dette mister du tilgangen automatisk.
+                </span>
               </span>
+            ) : (
+              <>
+                {daysRemaining} {daysRemaining === 1 ? 'dag' : 'dager'} gjenstår
+                {subscription.expiresAt && (
+                  <span className="block text-sm text-surface-500 mt-1">
+                    Tilgangen løper ut {new Date(subscription.expiresAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                )}
+              </>
             )}
           </p>
           <Link
@@ -171,19 +187,21 @@ export default function BetalingPage() {
           >
             Gå til øving
           </Link>
-          <div className="mt-6 pt-6 border-t border-surface-200">
-            <button
-              type="button"
-              onClick={async () => {
-                if (window.confirm('Er du sikker? Du mister tilgangen umiddelbart. Betalingen refunderes ikke.')) {
-                  await cancel();
-                }
-              }}
-              className="text-sm text-surface-500 hover:text-error-600 transition-colors"
-            >
-              Avslutt medlemskap
-            </button>
-          </div>
+          {!subscription.cancelled && (
+            <div className="mt-6 pt-6 border-t border-surface-200">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (window.confirm('Er du sikker? Du beholder tilgangen til perioden er over, men kan ikke fornye automatisk.')) {
+                    await cancel();
+                  }
+                }}
+                className="text-sm text-surface-500 hover:text-error-600 transition-colors"
+              >
+                Avslutt medlemskap
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
